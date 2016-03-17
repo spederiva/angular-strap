@@ -151,6 +151,8 @@ angular.module('mgcrea.ngStrap.tab', [])
     return {
       require: ['^?ngModel', '^bsTabs'],
       scope: true,
+      transclude: true,
+      template: '<ng-transclude ng-if="isActive"></ng-transclude>',
       link: function postLink (scope, element, attrs, controllers) {
 
         // var ngModelCtrl = controllers[0];
@@ -161,6 +163,10 @@ angular.module('mgcrea.ngStrap.tab', [])
 
         // Observe title attribute for change
         attrs.$observe('title', function (newValue, oldValue) {
+          if (attrs.cssIcons) {
+            newValue = '<i class="' + attrs.cssIcons + '"></i> ' + newValue;
+          }
+
           scope.title = $sce.trustAsHtml(newValue);
         });
 
@@ -184,9 +190,14 @@ angular.module('mgcrea.ngStrap.tab', [])
           bsTabsCtrl.$remove(scope);
         });
 
+        scope.isActive = false;
+
         function render () {
           var index = bsTabsCtrl.$panes.indexOf(scope);
-          $animate[bsTabsCtrl.$isActive(scope, index) ? 'addClass' : 'removeClass'](element, bsTabsCtrl.$options.activeClass);
+
+          scope.isActive = bsTabsCtrl.$isActive(scope, index);
+
+          $animate[scope.isActive ? 'addClass' : 'removeClass'](element, bsTabsCtrl.$options.activeClass);
         }
 
         bsTabsCtrl.$activePaneChangeListeners.push(function () {

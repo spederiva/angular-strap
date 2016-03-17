@@ -1,6 +1,6 @@
 /**
  * angular-strap
- * @version v2.3.7 - 2016-01-16
+ * @version v2.3.7 - 2016-03-17
  * @link http://mgcrea.github.io/angular-strap
  * @author Olivier Louvignes <olivier@mg-crea.com> (https://github.com/mgcrea)
  * @license MIT License, http://www.opensource.org/licenses/MIT
@@ -106,10 +106,15 @@ angular.module('mgcrea.ngStrap.tab', []).provider('$tab', function() {
   return {
     require: [ '^?ngModel', '^bsTabs' ],
     scope: true,
+    transclude: true,
+    template: '<ng-transclude ng-if="isActive"></ng-transclude>',
     link: function postLink(scope, element, attrs, controllers) {
       var bsTabsCtrl = controllers[1];
       element.addClass('tab-pane');
       attrs.$observe('title', function(newValue, oldValue) {
+        if (attrs.cssIcons) {
+          newValue = '<i class="' + attrs.cssIcons + '"></i> ' + newValue;
+        }
         scope.title = $sce.trustAsHtml(newValue);
       });
       scope.name = attrs.name;
@@ -123,9 +128,11 @@ angular.module('mgcrea.ngStrap.tab', []).provider('$tab', function() {
       scope.$on('$destroy', function() {
         bsTabsCtrl.$remove(scope);
       });
+      scope.isActive = false;
       function render() {
         var index = bsTabsCtrl.$panes.indexOf(scope);
-        $animate[bsTabsCtrl.$isActive(scope, index) ? 'addClass' : 'removeClass'](element, bsTabsCtrl.$options.activeClass);
+        scope.isActive = bsTabsCtrl.$isActive(scope, index);
+        $animate[scope.isActive ? 'addClass' : 'removeClass'](element, bsTabsCtrl.$options.activeClass);
       }
       bsTabsCtrl.$activePaneChangeListeners.push(function() {
         render();
